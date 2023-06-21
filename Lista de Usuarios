@@ -1,0 +1,131 @@
+function cadastroUsuarios() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var id_user = ss.getRange('C5').getValue();
+  var nome_user = ss.getRange('C7').getValue();
+  var pnome_user = ss.getRange('C9').getValue();
+  var lnome_user = ss.getRange('C11').getValue();
+  var unome_user = ss.getRange('C13').getValue();
+  var email_user = ss.getRange('C15').getValue();
+  var cargo_user = ss.getRange('C17').getValue();
+  var escola_user = ss.getRange('C19').getValue();
+  var data = Utilities.formatDate(new Date(), "GMT-3", "dd/MM/yyyy")
+
+  if (id_user == "" || nome_user == "" || pnome_user == "" || lnome_user == "" || unome_user == "" || email_user == "" || cargo_user == "" || escola_user == ""){
+    SpreadsheetApp.getUi().alert("ERRO: Faltam dados obrigatórios.");
+    return;
+  }
+  
+  var info = [id_user,nome_user,pnome_user,lnome_user,unome_user,email_user,cargo_user,escola_user,data]
+
+  ss.getRange('C5').clearContent();
+  ss.getRange('C7').clearContent();
+  ss.getRange('C9').clearContent();
+  ss.getRange('C11').clearContent();
+  ss.getRange('C13').clearContent();
+  ss.getRange('C15').clearContent();
+  ss.getRange('C17').clearContent();
+  ss.getRange('C19').clearContent();
+
+  var ss = ss.getSheetByName('Lista de Usuários');
+  ultima_linha = ss.getLastRow();
+
+  for (let i=0; i<9; i++){
+    ss.getRange(ultima_linha+1, i+1).setValue(info[i]);
+  }
+
+  SpreadsheetApp.getUi().alert("Funcionário Cadastrado com Sucesso!");
+}
+
+function buscarUser() {
+  var ss = SpreadsheetApp.getActive();
+  var nome = ss.getRange('C3').getValue();
+  var sslista = ss.getSheetByName('Lista de Usuários');
+
+  if(nome == ""){
+    SpreadsheetApp.getUi().alert("Favor Selecionar um Usuário");
+    return false
+  }
+
+  var ult_user = sslista.getLastRow();
+  var userdados = sslista.getRange(2,1,ult_user-1,8).getValues();
+
+  var dados = [];
+  for (let i=0; i<userdados.length;i++){
+    if(userdados[i][1] == nome){
+
+      for(let y = 0; y<8;y++){
+        dados.push(userdados[i][y]);
+      }
+
+    break
+    }
+  }
+
+  var ss = ss.getSheetByName('Formulário de Cadastro');
+
+  for (let i=0;i<15;i+=2){
+    ss.getRange(i+5,3,1,1).setValue(dados[i/2]);
+
+  }
+
+}
+
+function alterarDados() {
+  var ss = SpreadsheetApp.getActiveSheet();
+  var usuario = ss.getRange('C3').getValue();
+  var dadosnovos = [];
+  var data = Utilities.formatDate(new Date(), "GMT-3", "dd/MM/yyyy")
+
+  for(let i=0;i<15;i+=2) {
+    let item = ss.getRange(i+5,3).getValue();
+    dadosnovos.push(item);
+  }
+
+  var ui = SpreadsheetApp.getUi();
+  var resposta = ui.alert('ATENÇÃO', 'Tem Certeza que quer alterar os dados de '+usuario+'?', ui.ButtonSet.YES_NO);
+
+  var sslista = SpreadsheetApp.getActive().getSheetByName('Lista de Usuários');
+  var ult_user = sslista.getLastRow();
+  var userdados = sslista.getRange(2,1,ult_user-1,8).getValues();
+
+  if (resposta == ui.Button.YES){
+    for (let i = 0; i<userdados.length;i++){
+      if(userdados[i][1] == usuario){
+        for (let y=0;y<8;y++) {
+          sslista.getRange(i+2,y+1).setValue(dadosnovos[y]);
+        }
+        sslista.getRange(i+2,10).setValue(data);
+        ui.alert('Dados Alterados com Sucesso!');
+        return
+      }
+    }
+  } else{
+    ui.alert('Alteração Cancelada.');
+    return
+  }
+
+}
+
+function excluirUsuario() {
+  var ss = SpreadsheetApp.getActiveSheet();
+  var usuario = ss.getRange('C3').getValue();
+
+  var sslista = SpreadsheetApp.getActive().getSheetByName('Lista de Usuários');
+  var ult_user = sslista.getLastRow();
+  var userdados = sslista.getRange(2,2,ult_user-1,1).getValues();
+
+  var ui = SpreadsheetApp.getUi();
+  var resposta = ui.alert('ATENÇÃO','Tem certeza que quer excluir os dados de '+usuario+'?',ui.ButtonSet.YES_NO);
+
+  if (resposta == ui.Button.YES) {
+    for (let i=0; i<userdados.length; i++){
+      if (userdados[i] == usuario){
+        sslista.deleteRow(i+2);
+        ui.alert('Funcionário Excluído com Sucesso!');
+        return
+      }
+    }
+  } else {
+    ui.alert('Operação Cancelada.')
+  }
+}
